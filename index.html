@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CS Intake</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+
+    .page {
+      min-height: 100vh;
+      background: #0A3A66;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 16px;
+      box-sizing: border-box;
+    }
+
+    main {
+      background: #ffffff;
+      border-radius: 14px;
+      max-width: 640px;
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .header-bar {
+      background: #000;
+      border-radius: 12px 12px 0 0;
+      padding: 14px 0;
+      margin: -20px -20px 16px;
+      text-align: center;
+    }
+    .header-bar img { max-width: 220px; height: auto; }
+
+    h2 { margin: 0 0 4px; }
+    p.subtitle { margin: 0 0 16px; color: #555; font-size: 14px; }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      color: #0A3A66;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 9px 12px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      background: #2C8A57;
+      color: #fff;
+      height: 40px;
+    }
+
+    input::placeholder { color: #D6F0E3; }
+    select option { color: #000; }
+
+    input:focus, select:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(10,58,102,0.35);
+    }
+
+    .field { margin-bottom: 12px; }
+
+    hr {
+      margin: 16px 0;
+      border: none;
+      border-top: 1px solid #ddd;
+    }
+
+    .profile-box {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .profile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .profile-header strong { font-size: 14px; }
+
+    #profileText {
+      font-size: 13px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    #editProfileBtn {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    #profileForm { margin-top: 12px; display: none; }
+
+    #profileMsg {
+      margin-top: 6px;
+      color: #b00020;
+      font-size: 13px;
+    }
+
+    #submitMsg {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    button[type="submit"], #saveProfileBtn {
+      width: 100%;
+      height: 44px;
+      border-radius: 8px;
+      border: none;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #1F6F45;
+      color: #fff;
+      margin-top: 8px;
+    }
+  </style>
+
+  <!-- EmailJS SDK (공식 문서 방식) -->
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+  </script>
+</head>
+
+<body>
+  <div class="page">
+    <main>
+
+      <div class="header-bar">
+        <img src="logo.png" alt="HDX WILL Europe GmbH">
+      </div>
+
+      <h2>CS Intake Form</h2>
+      <p class="subtitle">All fields are required.</p>
+
+      <!-- Profile -->
+      <div class="profile-box">
+        <div class="profile-header">
+          <div>
+            <strong>Profile</strong>
+            <div id="profileText">Not set</div>
+          </div>
+          <button id="editProfileBtn" type="button">Edit</button>
+        </div>
+
+        <div id="profileForm">
+          <div class="field">
+            <label>Company Name *</label>
+            <input id="companyName" type="text" autocomplete="organization">
+          </div>
+
+          <div class="field">
+            <label>Agent Name *</label>
+            <input id="agentName" type="text" autocomplete="name">
+          </div>
+
+          <button id="saveProfileBtn" type="button">Save Profile</button>
+          <div id="profileMsg"></div>
+        </div>
+      </div>
+
+      <!-- Intake Form (EmailJS는 name이 템플릿 변수명이 됨) -->
+      <form id="intakeForm">
+
+        <!-- hidden profile fields (app.js가 채움) -->
+        <input type="hidden" id="mailCompany" name="company">
+        <input type="hidden" id="mailAgent" name="agent">
+
+        <div class="field">
+          <label>Country *</label>
+          <select id="country" name="country" required>
+            <option value="" disabled selected>Select a country</option>
+
+            <!-- EU -->
+            <option>Austria</option><option>Belgium</option><option>Bulgaria</option><option>Croatia</option>
+            <option>Cyprus</option><option>Czech Republic</option><option>Denmark</option><option>Estonia</option>
+            <option>Finland</option><option>France</option><option>Germany</option><option>Greece</option>
+            <option>Hungary</option><option>Ireland</option><option>Italy</option><option>Latvia</option>
+            <option>Lithuania</option><option>Luxembourg</option><option>Malta</option><option>Netherlands</option>
+            <option>Poland</option><option>Portugal</option><option>Romania</option><option>Slovakia</option>
+            <option>Slovenia</option><option>Spain</option><option>Sweden</option>
+
+            <!-- Non-EU Europe -->
+            <option>Albania</option><option>Bosnia and Herzegovina</option><option>Kosovo</option>
+            <option>Montenegro</option><option>North Macedonia</option><option>Norway</option>
+            <option>Serbia</option><option>Switzerland</option><option>United Kingdom</option>
+
+            <!-- Other trading countries -->
+            <option>Türkiye</option><option>Israel</option><option>Tunisia</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Clinic Name *</label>
+          <input id="clinicName" name="clinic_name" type="text" required>
+        </div>
+
+        <div class="field">
+          <label>Clinic Address *</label>
+          <input id="clinicAddress" name="clinic_address" type="text" required>
+        </div>
+
+        <div class="field">
+          <label>Clinic Phone *</label>
+          <input id="clinicPhone" name="clinic_phone" type="text" required inputmode="tel">
+        </div>
+
+        <div class="field">
+          <label>Dentist / Owner Name *</label>
+          <input id="dentistName" name="dentist_name" type="text" required>
+        </div>
+
+        <hr>
+
+        <div class="field">
+          <label>Device Name / Model *</label>
+          <select id="deviceName" name="device_name" required>
+            <option value="" disabled selected>Select a device</option>
+            <option>Dentri</option>
+            <option>Dentio</option>
+            <option>Eco-X</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Device Serial Number *</label>
+          <input id="deviceSN" name="device_sn" type="text" required>
+        </div>
+
+        <div class="field">
+          <label>TeamViewer ID *</label>
+          <input id="tvId" name="teamviewer_id" type="text" required>
+        </div>
+
+        <div class="field">
+          <label>TeamViewer Password *</label>
+          <input id="tvPw" name="teamviewer_pw" type="text" required>
+        </div>
+
+        <button id="submitBtn" type="submit">Submit</button>
+        <div id="submitMsg"></div>
+      </form>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
