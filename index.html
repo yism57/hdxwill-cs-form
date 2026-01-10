@@ -15,15 +15,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script defer src="./app.js"></script>
 
-
   <style>
     :root{
-      --blue:#0B3A6E;         /* 배경 파랑 */
-      --card:#ffffff;         /* 폼 카드 */
-      --black:#0b0b0b;        /* 로고 띠 */
-      --green:#1f7a4a;        /* 입력창 초록 */
-      --green-2:#2a8a57;      /* hover/focus */
-      --text-on-green:#ffffff;/* 초록 위 글자 */
+      --blue:#0B3A6E;
+      --card:#ffffff;
+      --black:#0b0b0b;
+      --green:#1f7a4a;
+      --green-2:#2a8a57;
+      --text-on-green:#ffffff;
       --label:#0b1b2b;
       --muted:#6b7a88;
       --border:#d7dde3;
@@ -49,7 +48,6 @@
       overflow:hidden;
     }
 
-    /* 로고 검은 띠 */
     .brandbar{
       background:var(--black);
       padding:14px 18px;
@@ -70,7 +68,6 @@
     h1{
       margin:6px 0 6px;
       font-size:28px;
-      letter-spacing:.2px;
     }
     .subtitle{
       margin:0 0 16px;
@@ -78,13 +75,11 @@
       font-size:14px;
     }
 
-    /* Profile box */
     .profile{
       border:1px solid var(--border);
       border-radius:12px;
-      padding:12px 12px;
+      padding:12px;
       display:flex;
-      align-items:flex-start;
       justify-content:space-between;
       gap:12px;
       margin:10px 0 18px;
@@ -98,7 +93,6 @@
     .profile .value{
       font-size:13px;
       color:#2b3a48;
-      line-height:1.35;
       white-space:pre-line;
     }
     .profile button{
@@ -119,30 +113,25 @@
     label{
       display:block;
       font-weight:700;
-      color:var(--label);
       font-size:13px;
-      margin:0 0 6px;
+      margin-bottom:6px;
     }
-    .req{ color:#0b5; font-weight:900; }
+    .req{ color:#0b5; }
 
     input, select{
       width:100%;
-      height:46px;               /* 들쑥날쑥 해결: 고정 높이 */
+      height:46px;
       border-radius:10px;
       border:1px solid rgba(0,0,0,.08);
       background:var(--green);
-      color:var(--text-on-green);
+      color:#fff;
       padding:10px 12px;
       font-size:14px;
       outline:none;
     }
 
-    input::placeholder{ color:rgba(255,255,255,.72); }
-
     select{
       appearance:none;
-      -webkit-appearance:none;
-      -moz-appearance:none;
       padding-right:36px;
       background-image:
         linear-gradient(45deg, transparent 50%, #fff 50%),
@@ -150,7 +139,7 @@
       background-position:
         calc(100% - 18px) 19px,
         calc(100% - 12px) 19px;
-      background-size:6px 6px, 6px 6px;
+      background-size:6px 6px;
       background-repeat:no-repeat;
     }
 
@@ -161,7 +150,6 @@
 
     .divider{
       border-top:1px solid var(--border);
-      margin:6px 0 2px;
     }
 
     .actions{
@@ -169,6 +157,7 @@
       display:flex;
       gap:10px;
     }
+
     .btn{
       width:100%;
       height:52px;
@@ -178,52 +167,29 @@
       font-weight:900;
       font-size:15px;
     }
+
     .btn-primary{
       background:var(--green);
       color:#fff;
     }
-    .btn-primary:hover{ background:var(--green-2); }
 
     .status{
       margin-top:12px;
       font-size:13px;
-      color:#0b2;
       font-weight:700;
       min-height:18px;
     }
     .status.error{ color:#ff3b3b; }
 
-    /* 모바일에서 앱처럼 보이게 살짝 */
     @media (max-width:520px){
-      body{ padding:18px 10px 26px; }
       h1{ font-size:24px; }
-      main{ border-radius:16px; }
     }
-
-    /* Profile editor buttons */
-#saveProfileBtn{
-  background: #ffffff;        /* 흰 바탕 */
-  color: #0f5132;   /* 진한 초록 */
-  border: 0;
-  font-weight: 700;
-}
-
-#saveProfileBtn:hover{
-  filter: brightness(1.05);
-}
-
-#cancelProfileBtn{
-  color: #0b0b0b;        /* Cancel 글씨색(원하면 바꿔도 됨) */
-  font-weight: 700;
-}
-
   </style>
 </head>
 
 <body>
   <main>
     <div class="brandbar">
-      <!-- 흰색 로고가 잘 보이도록 검은 띠 -->
       <img src="logo.png" alt="HDX WILL EUROPE GmbH" />
     </div>
 
@@ -231,98 +197,107 @@
       <h1>CS Intake Form</h1>
       <p class="subtitle">All fields are required.</p>
 
-      <!-- Profile -->
       <div class="profile">
         <div style="flex:1;">
           <div class="title">Profile</div>
           <div class="value" id="profileText">Not set</div>
 
-          <!-- ✅ 인라인 편집 폼 (prompt 대신) -->
           <div id="profileEditor" style="display:none; margin-top:10px;">
-            <label style="margin-top:10px;">Company <span class="req">*</span></label>
-            <input id="companyInput" type="text" placeholder="e.g. HDX" />
+            <label>Company *</label>
+            <input id="companyInput" type="text" />
 
-            <label style="margin-top:10px;">Agent <span class="req">*</span></label>
-            <input id="agentInput" type="text" placeholder="e.g. Seungmin Yi" />
+            <label style="margin-top:10px;">Agent *</label>
+            <input id="agentInput" type="text" />
 
             <div style="display:flex; gap:10px; margin-top:12px;">
-              <button type="button" class="btn btn-primary" id="saveProfileBtn">Save</button>
-              <button type="button" class="btn" id="cancelProfileBtn"
-                style="background:#fff; color:#0B3A6E; border:1px solid #d7dde3; font-weight:900;">
+              <!-- ✅ Save / Cancel 동일 스타일 -->
+              <button
+                type="button"
+                class="btn"
+                id="saveProfileBtn"
+                style="background:#fff; color:#0B3A6E; border:1px solid #d7dde3; font-weight:900;"
+              >
+                Save
+              </button>
+
+              <button
+                type="button"
+                class="btn"
+                id="cancelProfileBtn"
+                style="background:#fff; color:#0B3A6E; border:1px solid #d7dde3; font-weight:900;"
+              >
                 Cancel
               </button>
             </div>
 
-            <div id="profileMsg" class="status error" style="margin-top:10px;"></div>
+            <div id="profileMsg" class="status error"></div>
           </div>
         </div>
 
         <button type="button" id="editProfileBtn">Edit</button>
       </div>
 
-
       <form id="csForm">
-        <div class="grid">
-          <!-- hidden: EmailJS template 변수로 같이 보낼 값 -->
-          <input type="hidden" name="company" id="company" value="HDX" />
-          <input type="hidden" name="agent" id="agent" value="SM" />
+        <input type="hidden" name="company" id="company" />
+        <input type="hidden" name="agent" id="agent" />
 
+        <div class="grid">
           <div>
-            <label for="country">Country <span class="req">*</span></label>
-            <select name="country" id="country" required>
-              <option value="" selected>Select a country</option>
+            <label>Country *</label>
+            <select id="country" required>
+              <option value="">Select a country</option>
             </select>
           </div>
 
           <div>
-            <label for="clinic_name">Clinic Name <span class="req">*</span></label>
-            <input name="clinic_name" id="clinic_name" type="text" placeholder="" required />
+            <label>Clinic Name *</label>
+            <input id="clinic_name" required />
           </div>
 
           <div>
-            <label for="clinic_address">Clinic Address <span class="req">*</span></label>
-            <input name="clinic_address" id="clinic_address" type="text" placeholder="" required />
+            <label>Clinic Address *</label>
+            <input id="clinic_address" required />
           </div>
 
           <div>
-            <label for="clinic_phone">Clinic Phone <span class="req">*</span></label>
-            <input name="clinic_phone" id="clinic_phone" type="text" placeholder="" required />
+            <label>Clinic Phone *</label>
+            <input id="clinic_phone" required />
           </div>
 
           <div>
-            <label for="dentist_name">Dentist / Owner Name <span class="req">*</span></label>
-            <input name="dentist_name" id="dentist_name" type="text" placeholder="" required />
+            <label>Dentist / Owner Name *</label>
+            <input id="dentist_name" required />
           </div>
 
           <div class="divider"></div>
 
           <div>
-            <label for="device_name">Device Name / Model <span class="req">*</span></label>
-            <select name="device_name" id="device_name" required>
-              <option value="" selected>Select a device</option>
-              <option value="Dentri">Dentri</option>
-              <option value="Dentio">Dentio</option>
-              <option value="Eco-X">Eco-X</option>
+            <label>Device *</label>
+            <select id="device_name" required>
+              <option value="">Select</option>
+              <option>Dentri</option>
+              <option>Dentio</option>
+              <option>Eco-X</option>
             </select>
           </div>
 
           <div>
-            <label for="device_sn">Device Serial Number <span class="req">*</span></label>
-            <input name="device_sn" id="device_sn" type="text" placeholder="" required />
+            <label>Device SN *</label>
+            <input id="device_sn" required />
           </div>
 
           <div>
-            <label for="teamviewer_id">TeamViewer ID <span class="req">*</span></label>
-            <input name="teamviewer_id" id="teamviewer_id" type="text" placeholder="" required />
+            <label>TeamViewer ID *</label>
+            <input id="teamviewer_id" required />
           </div>
 
           <div>
-            <label for="teamviewer_pw">TeamViewer Password <span class="req">*</span></label>
-            <input name="teamviewer_pw" id="teamviewer_pw" type="text" placeholder="" required />
+            <label>TeamViewer PW *</label>
+            <input id="teamviewer_pw" required />
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" type="submit" id="submitBtn">Submit</button>
+            <button class="btn btn-primary" type="submit">Submit</button>
           </div>
         </div>
 
