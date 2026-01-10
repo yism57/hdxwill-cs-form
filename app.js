@@ -177,7 +177,7 @@ function setupEmailJS(){
     };
 
     try {
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams,  { publicKey: EMAILJS_PUBLIC_KEY });
       status.textContent = "OK. Email sent.";
       form.reset();
       $("country").value = "";
