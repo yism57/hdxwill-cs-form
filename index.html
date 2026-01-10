@@ -5,12 +5,19 @@
   <title>CS Intake</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- ✅ PWA: manifest + theme + iOS 아이콘 -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0A3A66">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
 
     .page {
       min-height: 100vh;
-      background: #0A3A66;
+      background: #0A3A66; /* 회사 파랑 */
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -27,6 +34,7 @@
       box-sizing: border-box;
     }
 
+    /* 상단 로고 검은 띠 */
     .header-bar {
       background: #000;
       border-radius: 12px 12px 0 0;
@@ -54,7 +62,7 @@
       font-size: 14px;
       border-radius: 8px;
       border: none;
-      background: #2C8A57;
+      background: #2C8A57; /* 입력창 초록 */
       color: #fff;
       height: 40px;
     }
@@ -75,6 +83,7 @@
       border-top: 1px solid #ddd;
     }
 
+    /* Profile box */
     .profile-box {
       border: 1px solid #ddd;
       border-radius: 10px;
@@ -133,7 +142,7 @@
     }
   </style>
 
-  <!-- EmailJS SDK (공식 문서 방식) -->
+  <!-- EmailJS SDK -->
   <script
     type="text/javascript"
     src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
@@ -177,10 +186,10 @@
         </div>
       </div>
 
-      <!-- Intake Form (EmailJS는 name이 템플릿 변수명이 됨) -->
+      <!-- Intake Form (EmailJS) -->
       <form id="intakeForm">
 
-        <!-- hidden profile fields (app.js가 채움) -->
+        <!-- hidden profile fields -->
         <input type="hidden" id="mailCompany" name="company">
         <input type="hidden" id="mailAgent" name="agent">
 
@@ -262,6 +271,14 @@
     </main>
   </div>
 
+  <!-- 기존 앱 로직 -->
   <script src="app.js"></script>
+
+  <!-- ✅ PWA: Service Worker 등록 (앱처럼) -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
+  </script>
 </body>
 </html>
