@@ -1,9 +1,9 @@
 /* =========
    EmailJS 설정 (본인 값)
    ========= */
-const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY";
-const EMAILJS_SERVICE_ID = "service_XXXXX";
-const EMAILJS_TEMPLATE_ID = "template_XXXXX";
+const EMAILJS_PUBLIC_KEY = "ja5K0BCuskcLni0DO";
+const EMAILJS_SERVICE_ID = "service_l775u5e";
+const EMAILJS_TEMPLATE_ID = "template_u0wh7gm";
 
 /* =========
    Profile 저장 키
