@@ -1,124 +1,132 @@
-const PROFILE_KEY = "cs_intake_profile_v1";
+/* =========
+   EmailJS 설정 (여기 3개만 본인 값으로 바꾸세요)
+   ========= */
+const EMAILJS_PUBLIC_KEY = "ja5K0BCuskcLni0DO";
+const EMAILJS_SERVICE_ID = "service_l775u5e";
+const EMAILJS_TEMPLATE_ID = "template_u0wh7gm";
 
-/**
- * EmailJS IDs (여기 3개만 너의 값으로 교체하면 됨)
- * - EmailJS docs: init(publicKey) + sendForm(serviceID, templateID, form) :contentReference[oaicite:3]{index=3}
- */
-const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID";
-const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";
-const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY";
+/* =========
+   국가 목록 (유럽 + 요청국 포함)
+   ========= */
+const COUNTRIES = [
+  "Germany","Austria","Switzerland","France","Italy","Spain","Portugal","Netherlands","Belgium","Luxembourg",
+  "United Kingdom","Ireland","Denmark","Sweden","Norway","Finland","Iceland",
+  "Poland","Czechia","Slovakia","Hungary","Romania","Bulgaria","Greece","Croatia","Slovenia","Serbia",
+  "Bosnia and Herzegovina","Montenegro","North Macedonia",
+  "Kosovo","Albania","Türkiye","Israel","Tunisia",
+  "Lithuania","Latvia","Estonia","Ukraine","Moldova","Georgia"
+];
 
-function getProfile() {
-  const raw = localStorage.getItem(PROFILE_KEY);
-  if (!raw) return null;
-  try {
-    const p = JSON.parse(raw);
-    if (p.company && p.agent) return p;
-    return null;
-  } catch {
-    return null;
-  }
+function $(id){ return document.getElementById(id); }
+
+function fillCountries(){
+  const sel = $("country");
+  COUNTRIES.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
 }
 
-function setProfile(p) {
-  localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+/* =========
+   Profile 편집 (회사/에이전트 값도 같이 바꿈)
+   ========= */
+function setupProfileEdit(){
+  const btn = $("editProfileBtn");
+  btn.addEventListener("click", () => {
+    const currentCompany = $("company").value || "HDX";
+    const currentAgent = $("agent").value || "SM";
+
+    const company = prompt("Company (for email):", currentCompany);
+    if (company === null) return;
+
+    const agent = prompt("Agent (for email):", currentAgent);
+    if (agent === null) return;
+
+    $("company").value = company.trim() || currentCompany;
+    $("agent").value = agent.trim() || currentAgent;
+
+    $("profileText").textContent = `${$("company").value} / ${$("agent").value}`;
+  });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Init EmailJS
-  if (typeof emailjs !== "undefined") {
-    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+/* =========
+   EmailJS 전송
+   ========= */
+function setupEmailJS(){
+  if (!window.emailjs) {
+    console.error("EmailJS not loaded.");
+    return;
   }
+  emailjs.init(EMAILJS_PUBLIC_KEY);
 
-  const profileText = document.getElementById("profileText");
-  const profileForm = document.getElementById("profileForm");
-  const editProfileBtn = document.getElementById("editProfileBtn");
-  const saveProfileBtn = document.getElementById("saveProfileBtn");
-  const companyName = document.getElementById("companyName");
-  const agentName = document.getElementById("agentName");
-  const profileMsg = document.getElementById("profileMsg");
+  const form = $("csForm");
+  const status = $("status");
+  const btn = $("submitBtn");
 
-  const intakeForm = document.getElementById("intakeForm");
-  const submitMsg = document.getElementById("submitMsg");
-  const submitBtn = document.getElementById("submitBtn");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    status.classList.remove("error");
+    status.textContent = "";
 
-  // Load profile on startup
-  const p = getProfile();
-  if (p) {
-    profileText.textContent = `${p.company} / ${p.agent}`;
-    profileForm.style.display = "none";
-  } else {
-    profileText.textContent = "Not set";
-    profileForm.style.display = "block";
-  }
-
-  // Edit profile
-  editProfileBtn.addEventListener("click", () => {
-    const current = getProfile();
-    if (current) {
-      companyName.value = current.company;
-      agentName.value = current.agent;
-    }
-    profileForm.style.display = "block";
-    profileMsg.textContent = "";
-  });
-
-  // Save profile
-  saveProfileBtn.addEventListener("click", () => {
-    const company = companyName.value.trim();
-    const agent = agentName.value.trim();
-
-    if (!company || !agent) {
-      profileMsg.textContent = "Company Name and Agent Name are required.";
+    // 필수값 체크 (브라우저 기본 validation + 추가 안전)
+    if (!form.checkValidity()) {
+      status.classList.add("error");
+      status.textContent = "Please fill all required fields.";
       return;
     }
 
-    setProfile({ company, agent });
-    profileText.textContent = `${company} / ${agent}`;
-    profileForm.style.display = "none";
-    profileMsg.textContent = "";
-  });
+    btn.disabled = true;
+    btn.textContent = "Sending...";
 
-  // Submit via EmailJS
-  intakeForm.addEventListener("submit", async (e) => {
-    e.preventDefault(); // EmailJS로 보낼 거라 기본 submit 막음
+    // 템플릿 변수명 = name 속성 그대로 사용
+    const templateParams = {
+      company: $("company").value,
+      agent: $("agent").value,
 
-    const prof = getProfile();
-    if (!prof) {
-      submitMsg.style.color = "#b00020";
-      submitMsg.textContent = "Please set Profile (Company/Agent) first.";
-      profileForm.style.display = "block";
-      return;
-    }
+      country: $("country").value,
+      clinic_name: $("clinic_name").value,
+      clinic_address: $("clinic_address").value,
+      clinic_phone: $("clinic_phone").value,
+      dentist_name: $("dentist_name").value,
 
-    // hidden fields 채우기 (템플릿에서 {{company}}, {{agent}} 로 사용)
-    document.getElementById("mailCompany").value = prof.company;
-    document.getElementById("mailAgent").value = prof.agent;
+      device_name: $("device_name").value,
+      device_sn: $("device_sn").value,
 
-    // 기본 검증: required는 브라우저가 해주지만, 혹시 대비해서 메시지 처리
-    if (!intakeForm.checkValidity()) {
-      submitMsg.style.color = "#b00020";
-      submitMsg.textContent = "Please fill in all required fields.";
-      return;
-    }
+      teamviewer_id: $("teamviewer_id").value,
+      teamviewer_pw: $("teamviewer_pw").value,
+    };
 
     try {
-      submitBtn.disabled = true;
-      submitMsg.style.color = "#555";
-      submitMsg.textContent = "Sending...";
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+      status.textContent = "OK. Email sent.";
+      form.reset();
 
-      await emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, intakeForm);
-
-      submitMsg.style.color = "#1F6F45";
-      submitMsg.textContent = "Sent. Thank you!";
-      intakeForm.reset(); // 폼 초기화 (Profile은 유지)
+      // reset 후 드롭다운 placeholder로 되돌림
+      $("country").value = "";
+      $("device_name").value = "";
     } catch (err) {
-      submitMsg.style.color = "#b00020";
-      submitMsg.textContent = "Failed to send. Please try again or contact admin.";
-      // 콘솔에서 원인 확인 가능
       console.error(err);
+      status.classList.add("error");
+      status.textContent = "Failed to send. Check EmailJS keys / template variables.";
     } finally {
-      submitBtn.disabled = false;
+      btn.disabled = false;
+      btn.textContent = "Submit";
     }
   });
-});
+}
+
+/* =========
+   Service Worker 등록 (PWA)
+   ========= */
+function registerSW(){
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.register("./sw.js").catch(console.error);
+}
+
+/* init */
+fillCountries();
+setupProfileEdit();
+setupEmailJS();
+registerSW();
