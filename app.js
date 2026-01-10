@@ -183,10 +183,17 @@ function setupEmailJS(){
       $("country").value = "";
       $("device_name").value = "";
     } catch (err) {
-      console.error(err);
-      status.classList.add("error");
-      status.textContent = "Failed to send. Check EmailJS keys / template variables.";
-    } finally {
+  console.error("EmailJS error:", err);
+
+  const reason =
+    err?.text ||
+    err?.message ||
+    (typeof err === "string" ? err : JSON.stringify(err));
+
+  status.classList.add("error");
+  status.textContent = `Failed to send: ${reason}`;
+} finally {
+
       btn.disabled = false;
       btn.textContent = "Submit";
     }
