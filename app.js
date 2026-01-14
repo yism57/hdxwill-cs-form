@@ -27,7 +27,6 @@ function $(id){ return document.getElementById(id); }
 function fillCountries(){
   const sel = $("country");
   if (!sel) return;
-  // 기존 option 유지(placeholder 1개) 후 추가
   COUNTRIES.forEach(c => {
     const opt = document.createElement("option");
     opt.value = c;
@@ -53,7 +52,20 @@ function saveProfile(p){
 }
 
 /* =========
-   Profile UI (prompt 차단 문제 해결)
+   Base64 (DataURL) helper
+   ========= */
+function readFileAsDataURL(file){
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve("");
+    const r = new FileReader();
+    r.onload = () => resolve(r.result); // data:image/...;base64,...
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+/* =========
+   Profile UI
    ========= */
 function setupProfileUI(){
   const profileText = $("profileText");
@@ -65,29 +77,24 @@ function setupProfileUI(){
   const agentInput = $("agentInput");
   const msg = $("profileMsg");
 
-  // hidden fields in form (EmailJS 전송용)
   const companyHidden = document.querySelector('input[name="company"]');
   const agentHidden = document.querySelector('input[name="agent"]');
 
   const applyProfileToUI = (p) => {
-    const text = `${p.company} / ${p.agent}`;
-    profileText.textContent = text;
+    profileText.textContent = `${p.company} / ${p.agent}`;
     if (companyHidden) companyHidden.value = p.company;
     if (agentHidden) agentHidden.value = p.agent;
   };
 
-  // 초기 로드
   const p = loadProfile();
   if (p) {
     applyProfileToUI(p);
   } else {
     profileText.textContent = "Not set";
-    // hidden 값도 비워 둠 (제출 전에 반드시 저장하게 유도)
     if (companyHidden) companyHidden.value = "";
     if (agentHidden) agentHidden.value = "";
   }
 
-  // 편집 열기
   editBtn?.addEventListener("click", () => {
     msg.textContent = "";
     const current = loadProfile();
@@ -96,13 +103,11 @@ function setupProfileUI(){
     editor.style.display = "block";
   });
 
-  // 취소
   cancelBtn?.addEventListener("click", () => {
     msg.textContent = "";
     editor.style.display = "none";
   });
 
-  // 저장
   saveBtn?.addEventListener("click", () => {
     msg.textContent = "";
     const company = companyInput.value.trim();
@@ -118,6 +123,84 @@ function setupProfileUI(){
     applyProfileToUI(newP);
     editor.style.display = "none";
   });
+}
+
+/* =========
+   SN/TV 모드 UI 토글 (Text <-> Photo)
+   ========= */
+function setupSnTvModeUI(){
+  const snText = $("device_sn");
+  const snPhotoWrap = $("snPhotoWrap");
+  const snPhoto = $("sn_photo");
+  const snHint = $("snPhotoHint");
+
+  const tvTextWrap = $("tvTextWrap");
+  const tvId = $("teamviewer_id");
+  const tvPw = $("teamviewer_pw");
+  const tvPhotoWrap = $("tvPhotoWrap");
+  const tvPhoto = $("tv_photo");
+  const tvHint = $("tvPhotoHint");
+
+  const getRadioValue = (name) =>
+    document.querySelector(`input[name="${name}"]:checked`)?.value;
+
+  function applyModes(){
+    const snMode = getRadioValue("sn_mode") || "text";
+    const tvMode = getRadioValue("tv_mode") || "text";
+
+    // SN
+    if (snMode === "text") {
+      snText.required = true;
+      if (snPhoto) snPhoto.required = false;
+      if (snPhotoWrap) snPhotoWrap.style.display = "none";
+    } else {
+      snText.required = false;
+      if (snPhoto) snPhoto.required = true;
+      if (snPhotoWrap) snPhotoWrap.style.display = "block";
+    }
+
+    // TeamViewer
+    if (tvMode === "text") {
+      tvId.required = true;
+      tvPw.required = true;
+      if (tvPhoto) tvPhoto.required = false;
+      if (tvTextWrap) tvTextWrap.style.display = "block";
+      if (tvPhotoWrap) tvPhotoWrap.style.display = "none";
+    } else {
+      tvId.required = false;
+      tvPw.required = false;
+      if (tvPhoto) tvPhoto.required = true;
+      if (tvTextWrap) tvTextWrap.style.display = "none";
+      if (tvPhotoWrap) tvPhotoWrap.style.display = "block";
+    }
+  }
+
+  document.querySelectorAll('input[name="sn_mode"]').forEach(r => r.addEventListener("change", applyModes));
+  document.querySelectorAll('input[name="tv_mode"]').forEach(r => r.addEventListener("change", applyModes));
+
+  snPhoto?.addEventListener("change", () => {
+    snHint.textContent = snPhoto.files?.[0] ? `Selected: ${snPhoto.files[0].name}` : "";
+  });
+  tvPhoto?.addEventListener("change", () => {
+    tvHint.textContent = tvPhoto.files?.[0] ? `Selected: ${tvPhoto.files[0].name}` : "";
+  });
+
+  applyModes();
+}
+
+function resetSnTvUI(){
+  // 라디오 기본값(text)로 복귀
+  const snTextRadio = document.querySelector('input[name="sn_mode"][value="text"]');
+  const tvTextRadio = document.querySelector('input[name="tv_mode"][value="text"]');
+  if (snTextRadio) snTextRadio.checked = true;
+  if (tvTextRadio) tvTextRadio.checked = true;
+
+  // 힌트 제거
+  if ($("snPhotoHint")) $("snPhotoHint").textContent = "";
+  if ($("tvPhotoHint")) $("tvPhotoHint").textContent = "";
+
+  // 모드 반영
+  setupSnTvModeUI();
 }
 
 /* =========
@@ -147,12 +230,12 @@ function setupEmailJS(){
     if (!company || !agent) {
       status.classList.add("error");
       status.textContent = "Please set Profile (Company / Agent) first.";
-      // 편집창 열어주기
       const editor = $("profileEditor");
       if (editor) editor.style.display = "block";
       return;
     }
 
+    // required 검사
     if (!form.checkValidity()) {
       status.classList.add("error");
       status.textContent = "Please fill all required fields.";
@@ -161,6 +244,17 @@ function setupEmailJS(){
 
     btn.disabled = true;
     btn.textContent = "Sending...";
+
+    // 모드
+    const snMode = document.querySelector('input[name="sn_mode"]:checked')?.value || "text";
+    const tvMode = document.querySelector('input[name="tv_mode"]:checked')?.value || "text";
+
+    // 사진(DataURL)
+    const snPhotoFile = $("sn_photo")?.files?.[0] || null;
+    const tvPhotoFile = $("tv_photo")?.files?.[0] || null;
+
+    const deviceSnPhotoDataUrl = await readFileAsDataURL(snPhotoFile);
+    const teamviewerPhotoDataUrl = await readFileAsDataURL(tvPhotoFile);
 
     const templateParams = {
       company,
@@ -171,29 +265,56 @@ function setupEmailJS(){
       clinic_phone: $("clinic_phone").value,
       dentist_name: $("dentist_name").value,
       device_name: $("device_name").value,
-      device_sn: $("device_sn").value,
-      teamviewer_id: $("teamviewer_id").value,
-      teamviewer_pw: $("teamviewer_pw").value,
+
+      // 텍스트(모드에 따라 빈 값일 수 있음)
+      device_sn: $("device_sn").value || "",
+      teamviewer_id: $("teamviewer_id")?.value || "",
+      teamviewer_pw: $("teamviewer_pw")?.value || "",
+
+      // 모드 + 사진
+      sn_mode: snMode,
+      tv_mode: tvMode,
+      device_sn_photo_dataurl: deviceSnPhotoDataUrl,
+      teamviewer_photo_dataurl: teamviewerPhotoDataUrl,
     };
 
     try {
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams,  { publicKey: EMAILJS_PUBLIC_KEY });
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        { publicKey: EMAILJS_PUBLIC_KEY }
+      );
+
       status.textContent = "OK. Email sent.";
+
+      // reset (프로필 hidden 값은 유지)
       form.reset();
+
+      // select 기본값 복귀
       $("country").value = "";
       $("device_name").value = "";
+
+      // 프로필 hidden 값 다시 적용 (reset이 기본값으로 되돌릴 수 있어서)
+      const p = loadProfile();
+      if (p) {
+        document.querySelector('input[name="company"]').value = p.company;
+        document.querySelector('input[name="agent"]').value = p.agent;
+      }
+
+      // 모드 UI 초기화
+      resetSnTvUI();
+
     } catch (err) {
-  console.error("EmailJS error:", err);
+      console.error("EmailJS error:", err);
+      const reason =
+        err?.text ||
+        err?.message ||
+        (typeof err === "string" ? err : JSON.stringify(err));
 
-  const reason =
-    err?.text ||
-    err?.message ||
-    (typeof err === "string" ? err : JSON.stringify(err));
-
-  status.classList.add("error");
-  status.textContent = `Failed to send: ${reason}`;
-} finally {
-
+      status.classList.add("error");
+      status.textContent = `Failed to send: ${reason}`;
+    } finally {
       btn.disabled = false;
       btn.textContent = "Submit";
     }
@@ -211,5 +332,6 @@ function registerSW(){
 /* init */
 fillCountries();
 setupProfileUI();
+setupSnTvModeUI();
 setupEmailJS();
 registerSW();

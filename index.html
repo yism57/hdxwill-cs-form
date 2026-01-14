@@ -17,12 +17,12 @@
 
   <style>
     :root{
-      --blue:#0B3A6E;         /* 배경 파랑 */
-      --card:#ffffff;         /* 폼 카드 */
-      --black:#0b0b0b;        /* 로고 띠 */
-      --green:#1f7a4a;        /* 입력창 초록 */
-      --green-2:#2a8a57;      /* hover/focus */
-      --text-on-green:#ffffff;/* 초록 위 글자 */
+      --blue:#0B3A6E;
+      --card:#ffffff;
+      --black:#0b0b0b;
+      --green:#1f7a4a;
+      --green-2:#2a8a57;
+      --text-on-green:#ffffff;
       --label:#0b1b2b;
       --muted:#6b7a88;
       --border:#d7dde3;
@@ -48,7 +48,6 @@
       overflow:hidden;
     }
 
-    /* 로고 검은 띠 */
     .brandbar{
       background:var(--black);
       padding:14px 18px;
@@ -77,7 +76,6 @@
       font-size:14px;
     }
 
-    /* Profile box */
     .profile{
       border:1px solid var(--border);
       border-radius:12px;
@@ -126,7 +124,7 @@
 
     input, select{
       width:100%;
-      height:46px;               /* 들쑥날쑥 해결: 고정 높이 */
+      height:46px;
       border-radius:10px;
       border:1px solid rgba(0,0,0,.08);
       background:var(--green);
@@ -192,7 +190,36 @@
     }
     .status.error{ color:#ff3b3b; }
 
-    /* 모바일에서 앱처럼 보이게 살짝 */
+    .modeRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-bottom:8px;
+    }
+    .modeRow label{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      font-weight:800;
+      font-size:13px;
+      margin:0;
+    }
+    .modeRow input[type="radio"]{
+      width:auto;
+      height:auto;
+      accent-color:#0B3A6E;
+      transform: translateY(1px);
+    }
+
+    /* file input looks odd with green background: keep it neutral */
+    input[type="file"]{
+      background:#fff;
+      color:#111;
+      border:1px solid var(--border);
+      height:auto;
+      padding:10px 12px;
+    }
+
     @media (max-width:520px){
       body{ padding:18px 10px 26px; }
       h1{ font-size:24px; }
@@ -204,7 +231,6 @@
 <body>
   <main>
     <div class="brandbar">
-      <!-- 흰색 로고가 잘 보이도록 검은 띠 -->
       <img src="logo.png" alt="HDX WILL EUROPE GmbH" />
     </div>
 
@@ -218,7 +244,6 @@
           <div class="title">Profile</div>
           <div class="value" id="profileText">Not set</div>
 
-          <!-- ✅ 인라인 편집 폼 (prompt 대신) -->
           <div id="profileEditor" style="display:none; margin-top:10px;">
             <label style="margin-top:10px;">Company <span class="req">*</span></label>
             <input id="companyInput" type="text" placeholder="e.g. HDX" />
@@ -227,7 +252,6 @@
             <input id="agentInput" type="text" placeholder="e.g. Seungmin Yi" />
 
             <div style="display:flex; gap:10px; margin-top:12px;">
-              <!-- ✅ Save 버튼: Cancel과 동일한 스타일로 변경 -->
               <button type="button" class="btn" id="saveProfileBtn"
                 style="background:#fff; color:#0B3A6E; border:1px solid #d7dde3; font-weight:900;">
                 Save
@@ -249,8 +273,8 @@
       <form id="csForm">
         <div class="grid">
           <!-- hidden: EmailJS template 변수로 같이 보낼 값 -->
-          <input type="hidden" name="company" id="company" value="HDX" />
-          <input type="hidden" name="agent" id="agent" value="SM" />
+          <input type="hidden" name="company" id="company" value="" />
+          <input type="hidden" name="agent" id="agent" value="" />
 
           <div>
             <label for="country">Country <span class="req">*</span></label>
@@ -261,22 +285,22 @@
 
           <div>
             <label for="clinic_name">Clinic Name <span class="req">*</span></label>
-            <input name="clinic_name" id="clinic_name" type="text" placeholder="" required />
+            <input name="clinic_name" id="clinic_name" type="text" required />
           </div>
 
           <div>
             <label for="clinic_address">Clinic Address <span class="req">*</span></label>
-            <input name="clinic_address" id="clinic_address" type="text" placeholder="" required />
+            <input name="clinic_address" id="clinic_address" type="text" required />
           </div>
 
           <div>
             <label for="clinic_phone">Clinic Phone <span class="req">*</span></label>
-            <input name="clinic_phone" id="clinic_phone" type="text" placeholder="" required />
+            <input name="clinic_phone" id="clinic_phone" type="text" required />
           </div>
 
           <div>
             <label for="dentist_name">Dentist / Owner Name <span class="req">*</span></label>
-            <input name="dentist_name" id="dentist_name" type="text" placeholder="" required />
+            <input name="dentist_name" id="dentist_name" type="text" required />
           </div>
 
           <div class="divider"></div>
@@ -291,19 +315,48 @@
             </select>
           </div>
 
+          <!-- ✅ Device S/N (Text or Photo) -->
           <div>
-            <label for="device_sn">Device Serial Number <span class="req">*</span></label>
-            <input name="device_sn" id="device_sn" type="text" placeholder="" required />
+            <label>Device Serial Number <span class="req">*</span></label>
+
+            <div class="modeRow">
+              <label><input type="radio" name="sn_mode" value="text" checked /> Text</label>
+              <label><input type="radio" name="sn_mode" value="photo" /> 📷 Photo</label>
+            </div>
+
+            <input name="device_sn" id="device_sn" type="text" required />
+
+            <div id="snPhotoWrap" style="display:none; margin-top:10px;">
+              <input type="file" id="sn_photo" accept="image/*" capture="environment" />
+              <div id="snPhotoHint" class="status" style="margin-top:6px; color:#6b7a88;"></div>
+            </div>
           </div>
 
+          <!-- ✅ TeamViewer (Text or Photo) -->
           <div>
-            <label for="teamviewer_id">TeamViewer ID <span class="req">*</span></label>
-            <input name="teamviewer_id" id="teamviewer_id" type="text" placeholder="" required />
-          </div>
+            <label>TeamViewer Info <span class="req">*</span></label>
 
-          <div>
-            <label for="teamviewer_pw">TeamViewer Password <span class="req">*</span></label>
-            <input name="teamviewer_pw" id="teamviewer_pw" type="text" placeholder="" required />
+            <div class="modeRow">
+              <label><input type="radio" name="tv_mode" value="text" checked /> Text</label>
+              <label><input type="radio" name="tv_mode" value="photo" /> 📷 Photo</label>
+            </div>
+
+            <div id="tvTextWrap">
+              <div style="margin-bottom:14px;">
+                <label for="teamviewer_id">TeamViewer ID <span class="req">*</span></label>
+                <input name="teamviewer_id" id="teamviewer_id" type="text" required />
+              </div>
+
+              <div>
+                <label for="teamviewer_pw">TeamViewer Password <span class="req">*</span></label>
+                <input name="teamviewer_pw" id="teamviewer_pw" type="text" required />
+              </div>
+            </div>
+
+            <div id="tvPhotoWrap" style="display:none; margin-top:10px;">
+              <input type="file" id="tv_photo" accept="image/*" capture="environment" />
+              <div id="tvPhotoHint" class="status" style="margin-top:6px; color:#6b7a88;"></div>
+            </div>
           </div>
 
           <div class="actions">
@@ -315,7 +368,5 @@
       </form>
     </div>
   </main>
-
-  <script src="app.js"></script>
 </body>
 </html>

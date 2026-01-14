@@ -1,9 +1,10 @@
-const CACHE_NAME = "hdxwill-cs-form-v2"; // ✅ v1 → v2로 변경 (중요)
+const CACHE_NAME = "hdxwill-cs-form-v3";
 
 const ASSETS = [
   "./",
   "./index.html",
   "./app.js",
+  "./sw.js",
   "./logo.png",
   "./icon-192.png",
   "./icon-512.png",
